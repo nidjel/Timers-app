@@ -12,19 +12,24 @@ class App extends Component {
 }
 
 class TimersDashboar extends Component {
+  constructor(props) {
+    super(props)
+    this.timerTickIntervals = {}
+  }
+  
   state = {
     timers: [
       {
         id: 1,
         title: 'Do something',
         project: 'project',
-        time:'12:00:00',
+        time: 0,
       },
       {
         id: 2,
         title: 'Do something else',
         project: 'project 2',
-        time:'00:00:00',
+        time: 0,
       }
     ]
   }
@@ -37,6 +42,13 @@ class TimersDashboar extends Component {
     }
   }
   handleDeleteTimer = (id) => this.deleteTimer(id)
+  handleStartStopTimer = (id) => {
+    if (this.timerTickIntervals[id]) {
+      this.stopTimer(id)
+    } else {
+      this.startTimer(id)
+    }
+  }
 
   updateTimer = (timer) => {
     const timers = this.state.timers
@@ -53,9 +65,11 @@ class TimersDashboar extends Component {
   
   createTimer = (timer) => {
     const timers = this.state.timers
+    const timerId = (Math.random() * 10).toFixed(5)
     const newTimer = {
-      id: timers[timers.length - 1].id + 1,
-      ...timer
+      ...timer,
+      id: timerId,
+      time: 0
     }
     this.setState({
       timers: [
@@ -74,13 +88,48 @@ class TimersDashboar extends Component {
         ...timers.slice(oldTimerIndex + 1)
       ]
     })
+    clearInterval(this.timerTickIntervals[id])
+    delete this.timerTickIntervals[id]
+  }
+  
+  startTimer = (id) => {
+    const doTimerTick = () => {
+      const timers = this.state.timers
+      const timerIndex = timers.findIndex(t => t.id === id)
+      const oldTimer = timers[timerIndex]
+      const newTimer = {
+        ...oldTimer,
+        time: oldTimer.time + 1
+      }
+      this.setState({
+        timers: [
+          ...timers.slice(0, timerIndex),
+          newTimer,
+          ...timers.slice(timerIndex + 1)
+        ]
+      })
+    }
+    doTimerTick()
+    this.timerTickIntervals[id] = setInterval(doTimerTick, 1000)
+  }
+  
+  stopTimer = (id) => {
+    clearInterval(this.timerTickIntervals[id])
+    delete this.timerTickIntervals[id]
+    this.setState({...this.state})
   }
 
   render() {
     const {timers} = this.state
     return (
       <div>
-        <EditableTimerList timers={timers} onUpdateCreateTimer={this.handleUpdateCreateTimer} onDeleteTimer={this.handleDeleteTimer} />
+        <EditableTimerList 
+          timers={timers}
+          startsTimersIds={Object.keys(this.timerTickIntervals)}
+          onUpdateCreateTimer={this.handleUpdateCreateTimer} 
+          onDeleteTimer={this.handleDeleteTimer} 
+          onStartTimer={this.handleStartStopTimer} 
+        />
         <AddTimer onUpdateCreateTimer={this.handleUpdateCreateTimer} />
       </div>
     )
@@ -89,10 +138,19 @@ class TimersDashboar extends Component {
 
 class EditableTimerList extends Component {
   render() {
-    const {timers, onUpdateCreateTimer, onDeleteTimer} = this.props
+    const {timers, onUpdateCreateTimer, onDeleteTimer, onStartTimer, startsTimersIds} = this.props
     return (
       <div>
-        {timers.map((t, i) => <EditableTimer key={i} timerData={t} onUpdateCreateTimer={onUpdateCreateTimer} onDeleteTimer={onDeleteTimer} />)}
+        {timers.map((t, i) => (
+          <EditableTimer 
+            key={i} 
+            timerData={t}
+            isTimerStart={startsTimersIds.includes(t.id.toString())}
+            onUpdateCreateTimer={onUpdateCreateTimer} 
+            onDeleteTimer={onDeleteTimer}
+            onStartTimer={onStartTimer}
+          />
+        ))}
       </div>
     )
   }
@@ -110,14 +168,24 @@ class EditableTimer extends Component {
   closeForm = () => this.setState({isFormOpen: false})
 
   render() {
-    const {timerData, onUpdateCreateTimer, onDeleteTimer} = this.props
+    const {timerData, onUpdateCreateTimer, onDeleteTimer, onStartTimer, isTimerStart} = this.props
     const {isFormOpen} = this.state
     return (
       <div>
         {isFormOpen ? (
-          <EditTimerForm timerData={timerData} onCancelForm={this.handleCancelForm} onUpdateCreateTimer={onUpdateCreateTimer} />
+          <EditTimerForm 
+            timerData={timerData} 
+            onCancelForm={this.handleCancelForm} 
+            onUpdateCreateTimer={onUpdateCreateTimer} 
+          />
         ) : (
-          <Timer timerData={timerData} onEditTimer={this.handleEditClick} onDeleteTimer={onDeleteTimer} />
+          <Timer 
+            timerData={timerData} 
+            onEditTimer={this.handleEditClick} 
+            onDeleteTimer={onDeleteTimer} 
+            onStartTimer={onStartTimer}
+            isTimerStart={isTimerStart}
+          />
         )}
       </div>
     )
@@ -126,7 +194,7 @@ class EditableTimer extends Component {
 
 class Timer extends Component {
   render() {
-    const {timerData: {id, title, project, time}, onEditTimer, onDeleteTimer} = this.props
+    const {timerData: {id, title, project, time}, onEditTimer, onDeleteTimer, onStartTimer, isTimerStart} = this.props
     return (
       <div>
         <h2>{title}</h2>
@@ -136,7 +204,7 @@ class Timer extends Component {
           <button onClick={() => onDeleteTimer(id)} >delete</button>
           <button onClick={onEditTimer} >edit</button>
         </div>
-        <button>Start</button>
+        <button onClick={() => onStartTimer(id)} >{isTimerStart ? 'Stop' : 'Start'}</button>
       </div>
     )
   }
@@ -215,7 +283,10 @@ class AddTimer extends Component {
     return (
       <div>
         {isFormOpen ? (
-          <EditTimerForm onCancelForm={this.handleCancelClick} onUpdateCreateTimer={onUpdateCreateTimer} />
+          <EditTimerForm 
+            onCancelForm={this.handleCancelClick} 
+            onUpdateCreateTimer={onUpdateCreateTimer} 
+          />
         ) : (
           <button onClick={this.handleAddClick} >Add Timer</button>
         )}
