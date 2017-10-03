@@ -124,7 +124,7 @@ class TimersDashboar extends Component {
   render() {
     const {timers} = this.state
     return (
-      <div className='timersDashboar'>
+      <div className='timersDashboard'>
         <EditableTimerList 
           timers={timers}
           startsTimersIds={Object.keys(this.timerTickIntervals)}
@@ -203,8 +203,8 @@ class Timer extends Component {
         <p>{project}</p>
         <span>{time}</span>
         <div>
-          <button onClick={() => onDeleteTimer(id)} >delete</button>
-          <button onClick={onEditTimer} >edit</button>
+          <button onClick={() => onDeleteTimer(id)} >Delete</button>
+          <button onClick={onEditTimer} >Edit</button>
         </div>
         <button onClick={() => onStartTimer(id)} >{isTimerStart ? 'Stop' : 'Start'}</button>
       </div>
