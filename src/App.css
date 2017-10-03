@@ -1,0 +1,41 @@
+.timersDashboar {
+  margin: 0 auto;
+  width: 200px;
+}
+
+.timer {
+  box-sizing: border-box;
+  margin-top: 15px;
+  width: 200px;
+  height: 200px;
+  text-align: center;
+  background: yellowgreen; 
+  border: 10px solid #655; 
+  outline: 15px solid deeppink;
+}
+
+.timer h3 {
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timerForm {
+  box-sizing: border-box;
+  margin-top: 15px;
+  width: 200px;
+  height: 200px;
+  text-align: center;
+  background: yellowgreen; 
+  border: 10px solid #655; 
+  outline: 15px solid deeppink;
+}
+
+.addTimerButton {
+  margin-top: 20px;
+  margin-left: 60px;
+  width: 80px;
+  height: 30px;
+  background: #689;
+  color: aliceblue;
+}

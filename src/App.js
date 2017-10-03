@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import getTimers from './Client.js'
 import './App.css';
 
 class App extends Component {
@@ -65,9 +66,10 @@ class TimersDashboar extends Component {
   
   createTimer = (timer) => {
     const timers = this.state.timers
-    const timerId = (Math.random() * 10).toFixed(5)
+    const timerId = Math.ceil(Math.random() * 10000)
     const newTimer = {
-      ...timer,
+      title: timer.title || 'title',
+      project: timer.project || 'project',
       id: timerId,
       time: 0
     }
@@ -116,13 +118,13 @@ class TimersDashboar extends Component {
   stopTimer = (id) => {
     clearInterval(this.timerTickIntervals[id])
     delete this.timerTickIntervals[id]
-    this.setState({...this.state})
+    this.setState({})
   }
 
   render() {
     const {timers} = this.state
     return (
-      <div>
+      <div className='timersDashboar'>
         <EditableTimerList 
           timers={timers}
           startsTimersIds={Object.keys(this.timerTickIntervals)}
@@ -196,9 +198,9 @@ class Timer extends Component {
   render() {
     const {timerData: {id, title, project, time}, onEditTimer, onDeleteTimer, onStartTimer, isTimerStart} = this.props
     return (
-      <div>
-        <h2>{title}</h2>
-        <h3>{project}</h3>
+      <div className='timer'>
+        <h3>{title}</h3>
+        <p>{project}</p>
         <span>{time}</span>
         <div>
           <button onClick={() => onDeleteTimer(id)} >delete</button>
@@ -252,10 +254,10 @@ class EditTimerForm extends Component {
     const {onCancelForm, timerData} = this.props
     const {title, project} = this.state.fields
     return (
-      <form onChange={this.handleChange} >
-        <span>Title</span>
+      <form onChange={this.handleChange} className='timerForm'>
+        <p>Title</p>
         <input type='text' name='title' value={title} />
-        <span>Project</span>
+        <p>Project</p>
         <input type='text' name='project' value={project} />
         <div>
           <button type='submit' onClick={this.handleUpdateCreateButtonClick} >{timerData ? 'Update' : 'Create'}</button>
@@ -281,14 +283,14 @@ class AddTimer extends Component {
     const {isFormOpen} = this.state
     const {onUpdateCreateTimer} = this.props
     return (
-      <div>
+      <div className='addTimerBlock'>
         {isFormOpen ? (
           <EditTimerForm 
             onCancelForm={this.handleCancelClick} 
             onUpdateCreateTimer={onUpdateCreateTimer} 
           />
         ) : (
-          <button onClick={this.handleAddClick} >Add Timer</button>
+          <button className='addTimerButton' onClick={this.handleAddClick} >Add Timer</button>
         )}
       </div>
     )
