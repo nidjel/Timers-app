@@ -1,21 +1,21 @@
 function getTimers() {
-  fetch('/api/timers', {
+  return fetch('/api/timers', {
     headers: {
-      'Accept': 'application/json'
-    },
-  }).then(checkStatus)
-    .then(res => res.json())
-    .then(timers => this.setState({timers}))
+      Accept: 'application/json'
+    }
+  })
+    .then(checkStatus)
+    .then(res => res.json());
 }
 
-function checkStatus (res) {
+function checkStatus(res) {
   if (res.status >= 200 && res.status < 300) {
-    return res
+    return res;
   } else {
-    var err = new Error(res.statusText)
-    err.response = res
-    throw err
+    var err = new Error(res.statusText);
+    err.response = res;
+    throw err;
   }
 }
 
-export default getTimers
+export default getTimers;
