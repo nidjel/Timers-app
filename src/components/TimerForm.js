@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class EditTimerForm extends Component {
+class TimerForm extends Component {
   state = {
     fields: {
       title: '',
@@ -28,17 +28,17 @@ class EditTimerForm extends Component {
     });
   };
 
-  handleUpdateCreateButtonClick = e => {
+  handleSubmit = e => {
     e.preventDefault();
-    this.props.onUpdateCreateTimer({
+    this.props.onFormSubmit({
       id: this.props.timerData && this.props.timerData.id,
       ...this.state.fields
     });
-    this.props.onCancelForm();
+    this.props.onFormClose();
   };
 
   render() {
-    const { onCancelForm, timerData } = this.props;
+    const { onFormClose, timerData } = this.props;
     const { title, project } = this.state.fields;
     return (
       <form onChange={this.handleChange} className="timerForm">
@@ -47,14 +47,14 @@ class EditTimerForm extends Component {
         <p>Project</p>
         <input type="text" name="project" value={project} />
         <div>
-          <button type="submit" onClick={this.handleUpdateCreateButtonClick}>
+          <button type="submit" onClick={this.handleSubmit}>
             {timerData ? 'Update' : 'Create'}
           </button>
-          <button onClick={onCancelForm}>Cancel</button>
+          <button onClick={onFormClose}>Cancel</button>
         </div>
       </form>
     );
   }
 }
 
-export default EditTimerForm;
+export default TimerForm;

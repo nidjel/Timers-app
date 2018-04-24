@@ -1,36 +1,19 @@
 import React, { Component } from 'react';
+import uuid from 'uuid';
 import EditableTimerList from './EditableTimerList';
 import AddTimer from './AddTimer';
-import getTimers from '../Client';
+import * as client from '../сlient';
 
 class TimersDashboard extends Component {
-  constructor(props) {
-    super(props);
-    this.timerTickIntervals = {};
-  }
-
   state = {
-    timers: [
-      {
-        id: 1,
-        title: 'Do something',
-        project: 'project',
-        time: 0
-      },
-      {
-        id: 2,
-        title: 'Do something else',
-        project: 'project 2',
-        time: 0
-      }
-    ]
+    timers: []
   };
 
   componentDidMount() {
-    getTimers().then(timers => console.log(timers));
+    client.getTimers().then(timers => this.setState({ timers }));
   }
 
-  handleUpdateCreateTimer = timer => {
+  handleCreateFormSubmit = timer => {
     if (timer.id) {
       this.updateTimer(timer);
     } else {
@@ -38,81 +21,93 @@ class TimersDashboard extends Component {
     }
   };
 
-  handleDeleteTimer = id => this.deleteTimer(id);
+  handleTrashClick = id => this.deleteTimer(id);
 
-  handleStartStopTimer = id => {
-    if (this.timerTickIntervals[id]) {
-      this.stopTimer(id);
-    } else {
-      this.startTimer(id);
-    }
+  handleStartClick = timerId => {
+    this.startTimer(timerId);
+  };
+
+  handleStopClick = timerId => {
+    this.stopTimer(timerId);
   };
 
   updateTimer = timer => {
-    const timers = this.state.timers;
-    const oldTimerIndex = timers.findIndex(t => t.id === timer.id);
-    const newTimer = Object.assign({}, timers[oldTimerIndex], timer);
     this.setState({
-      timers: [
-        ...timers.slice(0, oldTimerIndex),
-        newTimer,
-        ...timers.slice(oldTimerIndex + 1)
-      ]
+      timers: this.state.timers.map(t => {
+        if (t.id === timer.id) {
+          return Object.assign({}, t, {
+            title: timer.title,
+            project: timer.project
+          });
+        } else {
+          return t;
+        }
+      })
     });
+
+    client.updateTimer(timer);
   };
 
   createTimer = timer => {
     const timers = this.state.timers;
-    const timerId = Math.ceil(Math.random() * 10000);
+    const timerId = uuid.v4();
     const newTimer = {
-      title: timer.title || 'title',
-      project: timer.project || 'project',
+      title: timer.title || 'Timer',
+      project: timer.project || '',
       id: timerId,
-      time: 0
+      elapsed: 0
     };
     this.setState({
       timers: [...timers, newTimer]
     });
+
+    client.createTimer(newTimer);
   };
 
-  deleteTimer = id => {
-    const timers = this.state.timers;
-    const oldTimerIndex = timers.findIndex(t => t.id === id);
+  deleteTimer = timerId => {
     this.setState({
-      timers: [
-        ...timers.slice(0, oldTimerIndex),
-        ...timers.slice(oldTimerIndex + 1)
-      ]
+      timers: this.state.timers.filter(t => t.id !== timerId)
     });
-    clearInterval(this.timerTickIntervals[id]);
-    delete this.timerTickIntervals[id];
+
+    client.deleteTimer({ id: timerId });
   };
 
-  startTimer = id => {
-    const doTimerTick = () => {
-      const timers = this.state.timers;
-      const timerIndex = timers.findIndex(t => t.id === id);
-      const oldTimer = timers[timerIndex];
-      const newTimer = {
-        ...oldTimer,
-        time: oldTimer.time + 1
-      };
-      this.setState({
-        timers: [
-          ...timers.slice(0, timerIndex),
-          newTimer,
-          ...timers.slice(timerIndex + 1)
-        ]
-      });
-    };
-    doTimerTick();
-    this.timerTickIntervals[id] = setInterval(doTimerTick, 1000);
+  startTimer = timerId => {
+    const now = Date.now();
+
+    this.setState({
+      timers: this.state.timers.map(timer => {
+        if (timer.id === timerId) {
+          return Object.assign({}, timer, {
+            runningSince: now
+          });
+        } else {
+          return timer;
+        }
+      })
+    });
+
+    client.startTimer({ id: timerId, start: now });
   };
 
-  stopTimer = id => {
-    clearInterval(this.timerTickIntervals[id]);
-    delete this.timerTickIntervals[id];
-    this.setState({});
+  stopTimer = timerId => {
+    const now = Date.now();
+
+    this.setState({
+      timers: this.state.timers.map(timer => {
+        if (timer.id === timerId) {
+          const lastElapsed = now - timer.runningSince;
+          return Object.assign({}, timer, {
+            elapsed: timer.elapsed + lastElapsed,
+            runningSince: null
+          });
+        } else {
+          return timer;
+        }
+      })
+    });
+
+    client.stopTimer({ id: timerId, stop: now });
   };
 
   render() {
@@ -121,12 +116,12 @@ class TimersDashboard extends Component {
       <div className="timersDashboard">
         <EditableTimerList
           timers={timers}
-          startTimerIds={Object.keys(this.timerTickIntervals)}
-          onUpdateCreateTimer={this.handleUpdateCreateTimer}
-          onDeleteTimer={this.handleDeleteTimer}
-          onStartTimer={this.handleStartStopTimer}
+          onFormSubmit={this.handleCreateFormSubmit}
+          onTrashClick={this.handleTrashClick}
+          onStartClick={this.handleStartClick}
+          onStopClick={this.handleStopClick}
         />
-        <AddTimer onUpdateCreateTimer={this.handleUpdateCreateTimer} />
+        <AddTimer onFormSubmit={this.handleCreateFormSubmit} />
       </div>
     );
   }

@@ -5,10 +5,10 @@ class EditableTimerList extends Component {
   render() {
     const {
       timers,
-      onUpdateCreateTimer,
-      onDeleteTimer,
-      onStartTimer,
-      startTimerIds
+      onFormSubmit,
+      onTrashClick,
+      onStartClick,
+      onStopClick
     } = this.props;
     return (
       <div>
@@ -16,10 +16,10 @@ class EditableTimerList extends Component {
           <EditableTimer
             key={i}
             timerData={t}
-            isTimerStart={startTimerIds.includes(t.id.toString())}
-            onUpdateCreateTimer={onUpdateCreateTimer}
-            onDeleteTimer={onDeleteTimer}
-            onStartTimer={onStartTimer}
+            onFormSubmit={onFormSubmit}
+            onTrashClick={onTrashClick}
+            onStartClick={onStartClick}
+            onStopClick={onStopClick}
           />
         ))}
       </div>

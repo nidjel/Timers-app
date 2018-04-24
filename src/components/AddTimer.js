@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import EditTimerForm from './EditTimerForm';
+import TimerForm from './TimerForm';
 
 class AddTimer extends Component {
   state = {
@@ -14,13 +14,13 @@ class AddTimer extends Component {
 
   render() {
     const { isFormOpen } = this.state;
-    const { onUpdateCreateTimer } = this.props;
+    const { onFormSubmit } = this.props;
     return (
       <div className="addTimerBlock">
         {isFormOpen ? (
-          <EditTimerForm
-            onCancelForm={this.handleCancelClick}
-            onUpdateCreateTimer={onUpdateCreateTimer}
+          <TimerForm
+            onFormClose={this.handleCancelClick}
+            onFormSubmit={onFormSubmit}
           />
         ) : (
           <button className="addTimerButton" onClick={this.handleAddClick}>
